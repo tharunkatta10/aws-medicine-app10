@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AWS Medicine App - Tharun</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #eef7f1;
+      color: #2e3d32;
+    }
+    .container {
+      max-width: 800px;
+      margin: 60px auto;
+      padding: 40px;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 100, 0, 0.1);
+      text-align: center;
+    }
+    h1 {
+      color: #2e7d32;
+    }
+    h2 {
+      color: #388e3c;
+    }
+    .btn {
+      padding: 12px 20px;
+      margin: 10px;
+      border: none;
+      border-radius: 6px;
+      background: #43a047;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: 0.3s;
+    }
+    .btn:hover {
+      background: #2e7d32;
+    }
+    input[type="file"] {
+      margin: 20px 0;
+    }
+    #orderList {
+      margin-top: 20px;
+      text-align: left;
+    }
+    .order-item {
+      background: #e8f5e9;
+      padding: 10px 15px;
+      border-radius: 6px;
+      margin: 8px 0;
+      color: #1b5e20;
+    }
+    footer {
+      margin-top: 40px;
+      font-size: 0.9em;
+      color: #4caf50;
+    }
+    @media (max-width: 600px) {
+      .container {
+        margin: 20px;
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌿 AWS Medicine App Backend</h1>
+    <p>Built & Deployed by <strong>Tharun Katta</strong></p>
+
+    <a class="btn" href="/status" target="_blank">Health Check</a>
+    <a class="btn" href="/orders" target="_blank">Raw Orders JSON</a>
+
+    <hr />
+
+    <h2>📤 Upload File to S3</h2>
+    <form id="uploadForm">
+      <input type="file" id="fileInput" name="file" required />
+      <br />
+      <button type="submit" class="btn">Upload</button>
+    </form>
+    <p id="uploadResult"></p>
+
+    <hr />
+
+    <h2>📦 Dummy Orders</h2>
+    <div id="orderList">Loading orders...</div>
+
+    <footer>
+      &copy; 2025 • Hosted on AWS EC2 Mumbai • Secured with S3 + IAM
+    </footer>
+  </div>
+
+  <script>
+    // Upload handler
+    document.getElementById('uploadForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const fileInput = document.getElementById('fileInput');
+      if (!fileInput.files.length) return;
+
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+
+      const res = await fetch('/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      const text = await res.text();
+      document.getElementById('uploadResult').innerText = text;
+    });
+
+    // Load dummy orders
+    async function loadOrders() {
+      try {
+        const res = await fetch('/orders');
+        const data = await res.json();
+        const list = document.getElementById('orderList');
+        list.innerHTML = '';
+        data.forEach(order => {
+          const div = document.createElement('div');
+          div.className = 'order-item';
+          div.innerText = `#${order.id} - ${order.medicine} (Qty: ${order.quantity})`;
+          list.appendChild(div);
+        });
+      } catch {
+        document.getElementById('orderList').innerText = '⚠️ Failed to load orders.';
+      }
+    }
+
+    loadOrders();
+  </script>
+</body>
+</html>
+
